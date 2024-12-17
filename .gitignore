@@ -1,0 +1,40 @@
+## ASP.NET Core
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Dd]ist/
+[Dd]eploy/
+bin/
+obj/
+
+## User-specific files
+.vscode/
+.idea/
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+## Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+## User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## JetBrains Rider
+.idea/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# User-specific files
+.vs/
+.vs2019/

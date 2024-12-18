@@ -1,49 +1,131 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SkillSwapAPI.Data;
+using SkillSwapAPI.DTOs;
+using SkillSwapAPI.Interfaces;
 using SkillSwapAPI.Models;
+using SkillSwapAPI.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SkillSwapAPI.Controllers
 {
-    // Define el controlador para la entidad "Exchange" y la ruta base para este controlador
-    [Route("api/exchanges")]
+    [Route("api/[controller]")]
     [ApiController]
     public class ExchangesController : ControllerBase
     {
-        // Declaramos el contexto de la base de datos para interactuar con las entidades
-        private readonly SkillSwapContext _context;
+        private readonly IExchangeRepository _exchangeRepository;
 
-        // Constructor del controlador, recibe el contexto de la base de datos
-        public ExchangesController(SkillSwapContext context)
+        public ExchangesController(IExchangeRepository ExchangeRepository)
         {
-            _context = context;
+            _exchangeRepository = ExchangeRepository;
         }
 
-        // Acción GET: api/Exchanges
-        // Devuelve una lista de todos los intercambios almacenados en la base de datos
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Exchange>>> GetExchanges()
+        public async Task<ActionResult<IEnumerable<ExchangeDto>>> GetAllExchanges()
         {
-            // Incluye las entidades relacionadas (usuarios y habilidades) y devuelve todos los intercambios
-            return await _context.Exchanges
-                .Include(e => e.OfferedUser) // Incluye los datos del usuario que ofrece el intercambio
-                .Include(e => e.RequestedUser) // Incluye los datos del usuario que solicita el intercambio
-                .Include(e => e.OfferedSkill) // Incluye los datos de la habilidad ofrecida
-                .Include(e => e.RequestedSkill) // Incluye los datos de la habilidad solicitada
-                .ToListAsync();
+            var exchanges = await _exchangeRepository.GetAllExchangesAsync();
+            var exchangeDtos = exchanges.Select(e => new ExchangeDto
+            {
+                Id = e.Id,
+                OfferedUserId = e.OfferedUserId,
+                RequestedUserId = e.RequestedUserId,
+                OfferedSkillId = e.OfferedSkillId,
+                RequestedSkillId = e.RequestedSkillId,
+                Status = e.Status,
+                OfferedUserName = e.OfferedUser?.Name,
+                RequestedUserName = e.RequestedUser?.Name,
+                OfferedSkillName = e.OfferedSkill?.Name,
+                RequestedSkillName = e.RequestedSkill?.Name
+            }).ToList();
+
+            return Ok(exchangeDtos);
         }
 
-        // Acción POST: api/Exchanges
-        // Crea un nuevo intercambio en la base de datos
-        [HttpPost]
-        public async Task<ActionResult<Exchange>> PostExchange(Exchange exchange)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ExchangeDto>> GetExchange(int id)
         {
-            // Añade el nuevo intercambio a la base de datos
-            _context.Exchanges.Add(exchange);
-            await _context.SaveChangesAsync(); // Guarda los cambios realizados en la base de datos
+            var exchange = await _exchangeRepository.GetExchangeByIdAsync(id);
+            if (exchange == null)
+            {
+                return NotFound();
+            }
 
-            // Devuelve el nuevo intercambio creado junto con su URL para acceder a él
-            return CreatedAtAction(nameof(GetExchanges), new { id = exchange.Id }, exchange);
+            var exchangeDto = new ExchangeDto
+            {
+                Id = exchange.Id,
+                OfferedUserId = exchange.OfferedUserId,
+                RequestedUserId = exchange.RequestedUserId,
+                OfferedSkillId = exchange.OfferedSkillId,
+                RequestedSkillId = exchange.RequestedSkillId,
+                Status = exchange.Status,
+                OfferedUserName = exchange.OfferedUser?.Name,
+                RequestedUserName = exchange.RequestedUser?.Name,
+                OfferedSkillName = exchange.OfferedSkill?.Name,
+                RequestedSkillName = exchange.RequestedSkill?.Name
+            };
+
+            return Ok(exchangeDto);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<ExchangeDto>> CreateExchange(CreateExchangeDto createExchangeDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var createdExchange = await _exchangeRepository.CreateExchangeAsync(createExchangeDto);
+
+            var exchangeDto = new ExchangeDto
+            {
+                Id = createdExchange.Id,
+                OfferedUserId = createdExchange.OfferedUserId,
+                RequestedUserId = createdExchange.RequestedUserId,
+                OfferedSkillId = createdExchange.OfferedSkillId,
+                RequestedSkillId = createdExchange.RequestedSkillId,
+                Status = createdExchange.Status
+            };
+
+            return CreatedAtAction(nameof(GetExchange), new { id = createdExchange.Id }, exchangeDto);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ExchangeDto>> UpdateExchange(int id, UpdateExchangeDto updateExchangeDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var updatedExchange = await _exchangeRepository.UpdateExchangeAsync(id, updateExchangeDto);
+            if (updatedExchange == null)
+            {
+                return NotFound();
+            }
+
+            var exchangeDto = new ExchangeDto
+            {
+                Id = updatedExchange.Id,
+                OfferedUserId = updatedExchange.OfferedUserId,
+                RequestedUserId = updatedExchange.RequestedUserId,
+                OfferedSkillId = updatedExchange.OfferedSkillId,
+                RequestedSkillId = updatedExchange.RequestedSkillId,
+                Status = updatedExchange.Status
+            };
+
+            return Ok(exchangeDto);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteExchange(int id)
+        {
+            var result = await _exchangeRepository.DeleteExchangeAsync(id);
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
     }
 }

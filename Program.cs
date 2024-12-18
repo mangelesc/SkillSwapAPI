@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Interfaces;
 using SkillSwapAPI.Data;
 using SkillSwapAPI.Repositories;
+using SkillSwap.Reposiroty;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,9 @@ builder.Services.AddDbContext<SkillSwapContext>(options =>
 // Injección de dependencias
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISkillRepository, SkillRepository>();
+builder.Services.AddScoped<IExchangeRepository, ExchangeRepository>();
+builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+
 
 
 builder.Services.AddControllers();

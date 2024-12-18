@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SkillSwap.DTOs.Rating;
 using SkillSwapAPI.Data;
+using SkillSwapAPI.DTOs;
 using SkillSwapAPI.Interfaces;
 using SkillSwapAPI.Models;
 

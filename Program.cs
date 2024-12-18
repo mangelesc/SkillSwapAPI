@@ -14,6 +14,7 @@ builder.Services.AddDbContext<SkillSwapContext>(options =>
 
 // Injección de dependencias
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISkillRepository, SkillRepository>();
 
 
 builder.Services.AddControllers();

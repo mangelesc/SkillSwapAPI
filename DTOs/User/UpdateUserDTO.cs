@@ -17,6 +17,8 @@ namespace SkillSwapAPI.DTOs
         [EmailAddress(ErrorMessage = "Invalid email address")]
         public string Email { get; set; } = string.Empty;
 
+        
+
         public string? ProfilePicture { get; set; }
     }
     

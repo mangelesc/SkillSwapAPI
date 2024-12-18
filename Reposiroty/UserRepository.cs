@@ -126,5 +126,11 @@ namespace SkillSwapAPI.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        // Comprobar si el usuario existe
+        public async Task<bool> UserExistsAsync(int id)
+        {
+            return await _context.Users.AnyAsync(u => u.Id == id);
+        }
     }
 }

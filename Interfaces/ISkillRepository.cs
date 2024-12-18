@@ -1,19 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using SkillSwapAPI.Models;
-
+using SkillSwapAPI.DTOs;
 
 namespace SkillSwapAPI.Interfaces
 {
     public interface ISkillRepository
     {
-        Task<List<Skill>> GetAllAsync(); 
-        Task<Skill?> GetByIdAsync(int id); 
-        Task<Skill> CreateAsync(Skill Skill); 
-        // Task<Skill?> UpdateAsync (int id, UpdateSkillRequestDto SkillDto); 
-        // Task<Skill?> DeleteAsync (int id); 
-        // Task<bool> SkillExist(int id);
+        Task<IEnumerable<SkillDto>> GetAllSkillsAsync(SkillQueryParamsDto queryParams);
+        Task<SkillDto> GetSkillByIdAsync(int id);
+        Task<SkillDto> CreateSkillAsync(CreateSkillDto createSkillDto);
+        Task<SkillDto> UpdateSkillAsync(int id, UpdateSkillDto updateSkillDto);
+        Task<bool> DeleteSkillAsync(int id);
     }
 }

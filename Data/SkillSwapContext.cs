@@ -21,7 +21,7 @@ namespace SkillSwapAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuraciones de la relación de muchos a muchos entre usuarios y puntuaciones
+            // Configuraciones de la relación de uno a muchos entre usuarios y puntuaciones
             modelBuilder.Entity<Rating>()
                 .HasOne(r => r.User)
                 .WithMany(u => u.RatingsReceived)
@@ -32,6 +32,13 @@ namespace SkillSwapAPI.Data
                 .HasOne(r => r.RatedBy)
                 .WithMany(u => u.RatingsGiven)
                 .HasForeignKey(r => r.RatedById)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configuraciones uno a muchos entre User y Skills
+            modelBuilder.Entity<Skill>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Skills)
+                .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

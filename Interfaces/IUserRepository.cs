@@ -22,5 +22,8 @@ namespace SkillSwapAPI.Interfaces
 
         // Eliminar un usuario
         Task<bool> DeleteAsync(int id);
+
+        // Comprobar si el usuario existe
+        Task<bool> UserExistsAsync(int id);
     }
 }

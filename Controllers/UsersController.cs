@@ -1,44 +1,88 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SkillSwapAPI.Data;
-using SkillSwapAPI.Models;
+using SkillSwapAPI.Interfaces;
+using SkillSwapAPI.DTOs;
+using SkillSwapAPI.Helpers;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace SkillSwapAPI.Controllers
 {
-    // Define el controlador para la entidad "User" y la ruta base para este controlador
-    [Route("api/[controller]")]
+    [Route("api/users")]
     [ApiController]
     public class UsersController : ControllerBase
     {
-        // Declaramos el contexto de la base de datos para interactuar con las entidades
-        private readonly SkillSwapContext _context;
+        private readonly IUserRepository _userRepository;
 
-        // Constructor del controlador, recibe el contexto de la base de datos
-        public UsersController(SkillSwapContext context)
+        public UsersController(IUserRepository userRepository)
         {
-            _context = context;
+            _userRepository = userRepository;
         }
 
-        // Acción GET: api/Users
-        // Devuelve una lista de todos los usuarios almacenados en la base de datos
+        // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] UserQueryParams queryParams)
         {
-            // Devuelve todos los usuarios almacenados en la base de datos
-            return await _context.Users.ToListAsync();
+            // Verificar si el modelo es válido (validaciones en los DTOs)
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var users = await _userRepository.GetAllAsync(queryParams);
+            
+            // Devolver los usuarios filtrados y ordenados
+            return Ok(users);
         }
 
-        // Acción POST: api/Users
-        // Crea un nuevo usuario en la base de datos
-        [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        // GET: api/Users/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUser(int id)
         {
-            // Añade el nuevo usuario a la base de datos
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync(); // Guarda los cambios realizados en la base de datos
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+                return NotFound();
 
-            // Devuelve el usuario recién creado junto con su URL para acceder a él
-            return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
+            return Ok(user);
+        }
+
+        // POST: api/Users
+        [HttpPost]
+        public async Task<IActionResult> PostUser([FromBody] CreateUserDTO createUserDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Validación en el DTO
+            }
+
+            var user = await _userRepository.AddAsync(createUserDTO);
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+
+        // PUT: api/Users/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDTO updateUserDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Validación en el DTO
+            }
+
+            var user = await _userRepository.UpdateAsync(id, updateUserDTO);
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
+        }
+
+        // DELETE: api/Users/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var success = await _userRepository.DeleteAsync(id);
+            if (!success)
+                return NotFound();
+
+            return NoContent();
         }
     }
 }

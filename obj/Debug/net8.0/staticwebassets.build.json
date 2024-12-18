@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "XbavRbZZO+lGRlXnaYNIjZ1tXMsZ/1aF6GeVq8+l18g=",
+  "Hash": "3dTJxI78LdMcuK/qmMT6P7tHtVdz4WjBAK+1Xx8pgaQ=",
   "Source": "SkillSwap",
   "BasePath": "_content/SkillSwap",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "SkillSwap\\wwwroot",
+      "Source": "SkillSwap",
+      "ContentRoot": "D:\\Proyectos\\SkillSwap\\API\\SkillSwap\\wwwroot\\",
+      "BasePath": "_content/SkillSwap",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }

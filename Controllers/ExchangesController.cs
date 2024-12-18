@@ -6,7 +6,7 @@ using SkillSwapAPI.Models;
 namespace SkillSwapAPI.Controllers
 {
     // Define el controlador para la entidad "Exchange" y la ruta base para este controlador
-    [Route("api/[controller]")]
+    [Route("api/exchanges")]
     [ApiController]
     public class ExchangesController : ControllerBase
     {

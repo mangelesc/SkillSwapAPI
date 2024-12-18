@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using SkillSwapAPI.Interfaces;
 using SkillSwapAPI.Data;
+using SkillSwapAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,8 +12,9 @@ var connectionString = builder.Configuration.GetConnectionString("SkillSwapConne
 builder.Services.AddDbContext<SkillSwapContext>(options =>
     options.UseSqlite(connectionString));
 
+// Injección de dependencias
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-// Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

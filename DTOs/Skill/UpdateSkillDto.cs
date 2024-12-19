@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using SkillSwap.Models.Enums;
 
 namespace SkillSwapAPI.DTOs
 {
@@ -16,5 +17,6 @@ namespace SkillSwapAPI.DTOs
         [Required(ErrorMessage = "Skill description is required.")]
         [StringLength(250, ErrorMessage = "Description must not exceed 250 characters.")]
         public string Description { get; set; } = string.Empty;
+        public SkillCategory SkillCategory { get; set; }
     }
 }

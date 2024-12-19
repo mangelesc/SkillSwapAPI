@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Data;
 using SkillSwapAPI.Interfaces;
 
-namespace SkillSwapAPI.Repositories
+namespace SkillSwapAPI.Repository
 {
     public class SkillRepository : ISkillRepository
     {
@@ -32,6 +32,12 @@ namespace SkillSwapAPI.Repositories
                 query = query.Where(s => s.UserId == queryParams.UserId.Value);
             }
 
+            // Filtrado por categoría (SkillCategory)
+            if (queryParams.Category.HasValue)
+            {
+                query = query.Where(s => s.SkillCategory == queryParams.Category.Value);
+            }
+
             // Ordenar
             if (!string.IsNullOrEmpty(queryParams.SortBy))
             {
@@ -51,7 +57,7 @@ namespace SkillSwapAPI.Repositories
 
             // Paginación
             query = query.Skip((queryParams.Page - 1) * queryParams.PageSize)
-                         .Take(queryParams.PageSize);
+                        .Take(queryParams.PageSize);
 
             var skills = await query
                 .Select(s => new SkillDto
@@ -59,7 +65,8 @@ namespace SkillSwapAPI.Repositories
                     Id = s.Id,
                     Name = s.Name,
                     Description = s.Description,
-                    UserId = s.UserId
+                    UserId = s.UserId,
+                    SkillCategory = s.SkillCategory // Incluir categoría en el DTO
                 })
                 .ToListAsync();
 

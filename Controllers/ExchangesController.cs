@@ -2,44 +2,36 @@ using Microsoft.AspNetCore.Mvc;
 using SkillSwapAPI.DTOs;
 using SkillSwapAPI.Interfaces;
 using SkillSwapAPI.Models;
-using SkillSwapAPI.Repositories;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SkillSwapAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/exchanges")]
     [ApiController]
     public class ExchangesController : ControllerBase
     {
         private readonly IExchangeRepository _exchangeRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly ISkillRepository _skillRepository;
 
-        public ExchangesController(IExchangeRepository ExchangeRepository)
+        public ExchangesController(
+            IExchangeRepository exchangeRepository, 
+            IUserRepository userRepository, 
+            ISkillRepository skillRepository)
         {
-            _exchangeRepository = ExchangeRepository;
+            _exchangeRepository = exchangeRepository;
+            _userRepository = userRepository;
+            _skillRepository = skillRepository;
         }
 
+        // GET: api/exchanges
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ExchangeDto>>> GetAllExchanges()
+        public async Task<ActionResult<IEnumerable<ExchangeDto>>> GetExchanges([FromQuery] ExchangeQueryParamsDto queryParams)
         {
-            var exchanges = await _exchangeRepository.GetAllExchangesAsync();
-            var exchangeDtos = exchanges.Select(e => new ExchangeDto
-            {
-                Id = e.Id,
-                OfferedUserId = e.OfferedUserId,
-                RequestedUserId = e.RequestedUserId,
-                OfferedSkillId = e.OfferedSkillId,
-                RequestedSkillId = e.RequestedSkillId,
-                Status = e.Status,
-                OfferedUserName = e.OfferedUser?.Name,
-                RequestedUserName = e.RequestedUser?.Name,
-                OfferedSkillName = e.OfferedSkill?.Name,
-                RequestedSkillName = e.RequestedSkill?.Name
-            }).ToList();
-
-            return Ok(exchangeDtos);
+            var exchanges = await _exchangeRepository.GetAllExchangesAsync(queryParams);
+            return Ok(exchanges);
         }
 
+        // GET: api/exchanges/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ExchangeDto>> GetExchange(int id)
         {
@@ -49,78 +41,64 @@ namespace SkillSwapAPI.Controllers
                 return NotFound();
             }
 
-            var exchangeDto = new ExchangeDto
-            {
-                Id = exchange.Id,
-                OfferedUserId = exchange.OfferedUserId,
-                RequestedUserId = exchange.RequestedUserId,
-                OfferedSkillId = exchange.OfferedSkillId,
-                RequestedSkillId = exchange.RequestedSkillId,
-                Status = exchange.Status,
-                OfferedUserName = exchange.OfferedUser?.Name,
-                RequestedUserName = exchange.RequestedUser?.Name,
-                OfferedSkillName = exchange.OfferedSkill?.Name,
-                RequestedSkillName = exchange.RequestedSkill?.Name
-            };
-
-            return Ok(exchangeDto);
+            return Ok(exchange);
         }
 
+        // POST: api/exchanges
         [HttpPost]
         public async Task<ActionResult<ExchangeDto>> CreateExchange(CreateExchangeDto createExchangeDto)
         {
-            if (!ModelState.IsValid)
+            // Validar que los usuarios existen
+            var offeredUserExists = await _userRepository.UserExistsAsync(createExchangeDto.OfferedUserId);
+            var requestedUserExists = await _userRepository.UserExistsAsync(createExchangeDto.RequestedUserId);
+            if (!offeredUserExists || !requestedUserExists)
             {
-                return BadRequest(ModelState);
+                return BadRequest("One or both users do not exist.");
             }
 
+            // Validar que las habilidades existen
+            var offeredSkill = await _skillRepository.GetSkillByIdAsync(createExchangeDto.OfferedSkillId);
+            var requestedSkill = await _skillRepository.GetSkillByIdAsync(createExchangeDto.RequestedSkillId);
+            if (offeredSkill == null || requestedSkill == null)
+            {
+                return BadRequest("One or both skills do not exist.");
+            }
+
+            // Crear el intercambio
             var createdExchange = await _exchangeRepository.CreateExchangeAsync(createExchangeDto);
 
-            var exchangeDto = new ExchangeDto
-            {
-                Id = createdExchange.Id,
-                OfferedUserId = createdExchange.OfferedUserId,
-                RequestedUserId = createdExchange.RequestedUserId,
-                OfferedSkillId = createdExchange.OfferedSkillId,
-                RequestedSkillId = createdExchange.RequestedSkillId,
-                Status = createdExchange.Status
-            };
-
-            return CreatedAtAction(nameof(GetExchange), new { id = createdExchange.Id }, exchangeDto);
+            // Retornar resultado
+            return CreatedAtAction(nameof(GetExchange), new { id = createdExchange.Id }, createdExchange);
         }
 
+        // PUT: api/exchanges/{id}
         [HttpPut("{id}")]
         public async Task<ActionResult<ExchangeDto>> UpdateExchange(int id, UpdateExchangeDto updateExchangeDto)
         {
-            if (!ModelState.IsValid)
+            var exchange = await _exchangeRepository.GetExchangeByIdAsync(id);
+            if (exchange == null)
             {
-                return BadRequest(ModelState);
+                return NotFound();
             }
 
+            // Actualizar el estado del intercambio
             var updatedExchange = await _exchangeRepository.UpdateExchangeAsync(id, updateExchangeDto);
+
             if (updatedExchange == null)
             {
                 return NotFound();
             }
 
-            var exchangeDto = new ExchangeDto
-            {
-                Id = updatedExchange.Id,
-                OfferedUserId = updatedExchange.OfferedUserId,
-                RequestedUserId = updatedExchange.RequestedUserId,
-                OfferedSkillId = updatedExchange.OfferedSkillId,
-                RequestedSkillId = updatedExchange.RequestedSkillId,
-                Status = updatedExchange.Status
-            };
-
-            return Ok(exchangeDto);
+            return Ok(updatedExchange);
         }
 
+        // DELETE: api/exchanges/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteExchange(int id)
+        public async Task<ActionResult> DeleteExchange(int id)
         {
-            var result = await _exchangeRepository.DeleteExchangeAsync(id);
-            if (!result)
+            var success = await _exchangeRepository.DeleteExchangeAsync(id);
+
+            if (!success)
             {
                 return NotFound();
             }

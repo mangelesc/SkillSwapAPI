@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Interfaces;
 using SkillSwapAPI.Data;
-using SkillSwapAPI.Repositories;
-using SkillSwap.Reposiroty;
+using SkillSwapAPI.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +19,15 @@ builder.Services.AddScoped<IExchangeRepository, ExchangeRepository>();
 builder.Services.AddScoped<IRatingRepository, RatingRepository>();
 
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Configura la serialización de enums como cadenas
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
-builder.Services.AddControllers();
+// builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

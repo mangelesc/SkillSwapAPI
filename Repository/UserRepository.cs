@@ -7,7 +7,7 @@ using SkillSwapAPI.Helpers;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace SkillSwapAPI.Repositories
+namespace SkillSwapAPI.Repository
 {
     public class UserRepository : IUserRepository
     {

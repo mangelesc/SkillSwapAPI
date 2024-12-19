@@ -7,7 +7,7 @@ using SkillSwapAPI.Data;
 using SkillSwapAPI.Interfaces;
 using SkillSwapAPI.Models;
 
-namespace SkillSwap.Reposiroty
+namespace SkillSwapAPI.Repository
 {
   public class RatingRepository : IRatingRepository
   {

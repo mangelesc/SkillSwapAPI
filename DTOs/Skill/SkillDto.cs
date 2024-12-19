@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SkillSwap.Models.Enums;
 
 namespace SkillSwapAPI.DTOs
 {
@@ -12,5 +13,6 @@ namespace SkillSwapAPI.DTOs
         public string Description { get; set; } = string.Empty;
         public int UserId { get; set; }
         public string UserName { get; set; } = string.Empty;
+        public SkillCategory SkillCategory { get; set; }
     }
 }

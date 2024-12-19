@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using SkillSwap.Models.Enums;
 
 namespace SkillSwapAPI.DTOs
 {
@@ -18,5 +19,8 @@ namespace SkillSwapAPI.DTOs
 
         [Required(ErrorMessage = "UserId is required.")]
         public int UserId { get; set; }
+
+        [Required(ErrorMessage = "SkillCategory is required.")]
+        public SkillCategory SkillCategory { get; set; }
     }
 }

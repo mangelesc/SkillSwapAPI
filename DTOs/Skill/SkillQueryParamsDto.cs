@@ -1,3 +1,5 @@
+using SkillSwap.Models.Enums;
+
 namespace SkillSwapAPI.DTOs
 {
     public class SkillQueryParamsDto
@@ -7,6 +9,7 @@ namespace SkillSwapAPI.DTOs
         public bool SortDescending { get; set; }
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 10;
-        public int? UserId { get; set; } // Nueva propiedad para filtrar por UserId
+        public int? UserId { get; set; }
+        public SkillCategory? Category { get; set; } 
     }
 }

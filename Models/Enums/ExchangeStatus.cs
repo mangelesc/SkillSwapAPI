@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace SkillSwapAPI.Models
+namespace SkillSwapAPI.Models.Enums
 {
     public enum ExchangeStatus
     {

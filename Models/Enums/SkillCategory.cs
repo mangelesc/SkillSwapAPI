@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
-namespace SkillSwap.Models.Enums
+namespace SkillSwapAPI.Models.Enums
 {
     public enum SkillCategory
     {

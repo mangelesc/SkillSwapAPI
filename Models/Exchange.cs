@@ -1,4 +1,4 @@
-namespace SkillSwapAPI.Models
+namespace SkillSwapAPI.Models.Enums
 {
     public class Exchange
     {

@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Models;
 using SkillSwapAPI.DTOs;
+using SkillSwapAPI.Models.Enums;
+using SkillSwapAPI.Interfaces;
+using SkillSwapAPI.Data;
+using SkillSwapAPI.Mappers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SkillSwapAPI.Interfaces;
-using SkillSwapAPI.Data;
 
 namespace SkillSwapAPI.Repository
 {
@@ -18,6 +20,16 @@ namespace SkillSwapAPI.Repository
             _context = context;
         }
 
+        // Método auxiliar para cargar las relaciones
+        private async Task LoadRelatedDataAsync(Exchange exchange)
+        {
+            await _context.Entry(exchange).Reference(e => e.OfferedUser).LoadAsync();
+            await _context.Entry(exchange).Reference(e => e.RequestedUser).LoadAsync();
+            await _context.Entry(exchange).Reference(e => e.OfferedSkill).LoadAsync();
+            await _context.Entry(exchange).Reference(e => e.RequestedSkill).LoadAsync();
+        }
+
+        // Obtener todos los intercambios con filtros y paginación
         public async Task<IEnumerable<ExchangeDto>> GetAllExchangesAsync(ExchangeQueryParamsDto queryParams)
         {
             var query = _context.Exchanges
@@ -27,19 +39,17 @@ namespace SkillSwapAPI.Repository
                 .Include(e => e.RequestedSkill)
                 .AsQueryable();
 
-            // Filtros por OfferedSkillId
+            // Aplicar filtros según los parámetros de consulta
             if (queryParams.OfferedSkillId.HasValue)
             {
                 query = query.Where(e => e.OfferedSkillId == queryParams.OfferedSkillId.Value);
             }
 
-            // Filtros por RequestedSkillId
             if (queryParams.RequestedSkillId.HasValue)
             {
                 query = query.Where(e => e.RequestedSkillId == queryParams.RequestedSkillId.Value);
             }
 
-            // Filtro por status
             if (!string.IsNullOrEmpty(queryParams.Status))
             {
                 if (Enum.TryParse<ExchangeStatus>(queryParams.Status, out var status))
@@ -52,7 +62,6 @@ namespace SkillSwapAPI.Repository
                 }
             }
 
-            // Filtro por UserId (puede ser OfferedUserId o RequestedUserId)
             if (queryParams.UserId.HasValue)
             {
                 query = query.Where(e => e.OfferedUserId == queryParams.UserId.Value || e.RequestedUserId == queryParams.UserId.Value);
@@ -60,28 +69,14 @@ namespace SkillSwapAPI.Repository
 
             // Paginación
             query = query.Skip((queryParams.Page - 1) * queryParams.PageSize)
-                        .Take(queryParams.PageSize);
+                         .Take(queryParams.PageSize);
 
-            var exchanges = await query
-                .Select(e => new ExchangeDto
-                {
-                    Id = e.Id,
-                    OfferedUserId = e.OfferedUserId,
-                    RequestedUserId = e.RequestedUserId,
-                    OfferedSkillId = e.OfferedSkillId,
-                    RequestedSkillId = e.RequestedSkillId,
-                    Status = e.Status,
-                    OfferedUserName = e.OfferedUser.Name,
-                    RequestedUserName = e.RequestedUser.Name,
-                    OfferedSkillName = e.OfferedSkill.Name,
-                    RequestedSkillName = e.RequestedSkill.Name
-                })
-                .ToListAsync();
-
-            return exchanges;
+            // Obtener los intercambios y convertirlos a DTOs
+            var exchanges = await query.ToListAsync();
+            return exchanges.Select(e => e.ToExchangeDto()); // Usamos el mapper aquí
         }
 
-
+        // Obtener un intercambio por su ID
         public async Task<ExchangeDto> GetExchangeByIdAsync(int id)
         {
             var exchange = await _context.Exchanges
@@ -89,48 +84,25 @@ namespace SkillSwapAPI.Repository
                 .Include(e => e.RequestedUser)
                 .Include(e => e.OfferedSkill)
                 .Include(e => e.RequestedSkill)
-                .Where(e => e.Id == id)
-                .Select(e => new ExchangeDto
-                {
-                    Id = e.Id,
-                    OfferedUserId = e.OfferedUserId,
-                    RequestedUserId = e.RequestedUserId,
-                    OfferedSkillId = e.OfferedSkillId,
-                    RequestedSkillId = e.RequestedSkillId,
-                    Status = e.Status,
-                    OfferedUserName = e.OfferedUser.Name,
-                    RequestedUserName = e.RequestedUser.Name,
-                    OfferedSkillName = e.OfferedSkill.Name,
-                    RequestedSkillName = e.RequestedSkill.Name
-                })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(e => e.Id == id);
 
-            return exchange;
+            return exchange?.ToExchangeDto(); // Usamos el mapper aquí
         }
 
+        // Crear un intercambio
         public async Task<Exchange> CreateExchangeAsync(CreateExchangeDto createExchangeDto)
         {
-            var exchange = new Exchange
-            {
-                OfferedUserId = createExchangeDto.OfferedUserId,
-                RequestedUserId = createExchangeDto.RequestedUserId,
-                OfferedSkillId = createExchangeDto.OfferedSkillId,
-                RequestedSkillId = createExchangeDto.RequestedSkillId,
-                Status = ExchangeStatus.Pending
-            };
-
+            var exchange = createExchangeDto.ToExchange();
             _context.Exchanges.Add(exchange);
             await _context.SaveChangesAsync();
 
-            // Cargar los datos relacionados
-            await _context.Entry(exchange).Reference(e => e.OfferedUser).LoadAsync();
-            await _context.Entry(exchange).Reference(e => e.RequestedUser).LoadAsync();
-            await _context.Entry(exchange).Reference(e => e.OfferedSkill).LoadAsync();
-            await _context.Entry(exchange).Reference(e => e.RequestedSkill).LoadAsync();
+            // Cargar los datos relacionados (usuarios y habilidades)
+            await LoadRelatedDataAsync(exchange);
 
             return exchange;
         }
 
+        // Actualizar un intercambio
         public async Task<Exchange> UpdateExchangeAsync(int id, UpdateExchangeDto updateExchangeDto)
         {
             var exchange = await _context.Exchanges
@@ -145,12 +117,13 @@ namespace SkillSwapAPI.Repository
                 return null;
             }
 
-            exchange.Status = updateExchangeDto.Status;
+            exchange = updateExchangeDto.ToExchange(exchange); // Usamos el mapper aquí
             await _context.SaveChangesAsync();
 
             return exchange;
         }
 
+        // Eliminar un intercambio
         public async Task<bool> DeleteExchangeAsync(int id)
         {
             var exchange = await _context.Exchanges.FindAsync(id);

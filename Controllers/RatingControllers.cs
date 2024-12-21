@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Data;
 using SkillSwapAPI.DTOs;
 using SkillSwapAPI.Interfaces;
+using SkillSwapAPI.Mappers;
 using SkillSwapAPI.Models;
 
 namespace SkillSwap.Controllers
@@ -31,46 +32,38 @@ namespace SkillSwap.Controllers
         public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatings(int userId)
         {
             var ratings = await _ratingRepository.GetRatingsByUserIdAsync(userId);
-            var ratingsDto = ratings.Select(r => new RatingDto
-            {
-                UserId = r.UserId,
-                RatedById = r.RatedById,
-                Score = r.Score,
-                Comment = r.Comment
-            }).ToList();
+
+            // Use the mapper to convert to DTOs
+            var ratingsDto = ratings.Select(RatingMapper.ToRatingDto).ToList();
 
             return Ok(ratingsDto);
         }
+
         // POST: api/Ratings/rate/{userId}
         [HttpPost("rate/{userId}")]
-        public async Task<ActionResult<RatingDto>> RateUser(int userId, CreateRatingDto createRatingDTO)
+        public async Task<ActionResult<RatingDto>> RateUser(int userId, [FromBody] CreateRatingDto createRatingDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // El usuario logueado es el que realiza la puntuación
-            var ratedById = int.Parse(User.Identity.Name); // Obtén el ID del usuario logueado de la sesión
-
-            var rating = new Rating
+            // Validamos que RatedById sea válido
+            if (createRatingDTO.RatedById <= 0)
             {
-                UserId = userId,  // Usuario que recibe la puntuación
-                RatedById = ratedById,  // Usuario que da la puntuación
-                Score = createRatingDTO.Score,
-                Comment = createRatingDTO.Comment
-            };
+                return BadRequest("Invalid RatedById.");
+            }
 
-            // Guardar la puntuación en la base de datos
-            var createdRating = await _ratingRepository.AddRatingAsync(rating);
+            // Llamamos al repositorio para agregar la calificación
+            var rating = await _ratingRepository.AddRatingAsync(userId, createRatingDTO.RatedById, createRatingDTO);
 
-            return Ok(new RatingDto
+            // Si la calificación no fue creada, retornamos un error
+            if (rating == null)
             {
-                UserId = createdRating.UserId,
-                RatedById = createdRating.RatedById,
-                Score = createdRating.Score,
-                Comment = createdRating.Comment
-            });
+                return BadRequest("Failed to create rating.");
+            }
+
+            // Retornamos el RatingDto con la información creada
+            return Ok(RatingMapper.ToRatingDto(rating));
         }
 
-        
     }
 }

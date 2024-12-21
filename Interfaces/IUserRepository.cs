@@ -8,7 +8,6 @@ namespace SkillSwapAPI.Interfaces
 {
     public interface IUserRepository
     {
-        // Obtener todos los usuarios con parámetros de búsqueda, ordenación y paginación
         Task<List<UserDTO>> GetAllAsync(UserQueryParams queryParams);
 
         // Obtener un usuario por ID

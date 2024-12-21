@@ -157,3 +157,4 @@ D:\Proyectos\SkillSwap\API\SkillSwap\obj\Debug\net8.0\SkillSwap.pdb
 D:\Proyectos\SkillSwap\API\SkillSwap\obj\Debug\net8.0\SkillSwap.genruntimeconfig.cache
 D:\Proyectos\SkillSwap\API\SkillSwap\obj\Debug\net8.0\ref\SkillSwap.dll
 D:\Proyectos\SkillSwap\API\SkillSwap\bin\Debug\net8.0\SkillSwap.staticwebassets.runtime.json
+D:\Proyectos\SkillSwap\API\SkillSwap\obj\Debug\net8.0\SkillSwap.sourcelink.json

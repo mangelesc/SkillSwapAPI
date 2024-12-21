@@ -1,5 +1,4 @@
-using SkillSwap.Models.Enums;
-
+using SkillSwapAPI.Models.Enums;
 namespace SkillSwapAPI.DTOs
 {
     public class SkillQueryParamsDto

@@ -4,21 +4,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Data;
+using SkillSwapAPI.DTOs;
 using SkillSwapAPI.Interfaces;
+using SkillSwapAPI.Mappers;
 using SkillSwapAPI.Models;
 
 namespace SkillSwapAPI.Repository
 {
-  public class RatingRepository : IRatingRepository
-  {
-    private readonly SkillSwapContext _context;
+    public class RatingRepository : IRatingRepository
+    {
+        private readonly SkillSwapContext _context;
 
         public RatingRepository(SkillSwapContext context)
         {
             _context = context;
         }
 
-        // Obtener todas las puntuaciones de un usuario
         public async Task<List<Rating>> GetRatingsByUserIdAsync(int userId)
         {
             return await _context.Ratings
@@ -26,15 +27,29 @@ namespace SkillSwapAPI.Repository
                 .ToListAsync();
         }
 
-        // Agregar una nueva puntuación
-        public async Task<Rating> AddRatingAsync(Rating rating)
+        public async Task<Rating?> AddRatingAsync(int userId, int ratedById, CreateRatingDto createRatingDto)
         {
-            _context.Ratings.Add(rating);
-            await _context.SaveChangesAsync();
-            return rating;
+            // Mapeamos el DTO a la entidad Rating
+            var rating = RatingMapper.ToRating(userId, ratedById, createRatingDto);
+
+            try
+            {
+                // Agregar la calificación a la base de datos
+                _context.Ratings.Add(rating);
+                await _context.SaveChangesAsync();
+
+                // Retornar la calificación que se ha creado
+                return rating;
+            }
+            catch (Exception ex)
+            {
+                // Manejar el error si no se pudo guardar la calificación
+                Console.WriteLine($"Error creating rating: {ex.Message}");
+                return null;
+            }
         }
 
-        // Obtener la puntuación promedio de un usuario
+
         public async Task<double> GetAverageRatingByUserIdAsync(int userId)
         {
             var ratings = await _context.Ratings
@@ -45,7 +60,7 @@ namespace SkillSwapAPI.Repository
             {
                 return ratings.Average(r => r.Score);
             }
-            return 0; // Si no hay puntuaciones, retornamos 0
+            return 0; // Return 0 if no ratings exist
         }
     }
 }

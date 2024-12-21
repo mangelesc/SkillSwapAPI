@@ -1,4 +1,4 @@
-using SkillSwap.Models.Enums;
+using SkillSwapAPI.Models.Enums;
 
 namespace SkillSwapAPI.Models
 {

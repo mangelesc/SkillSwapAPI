@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Models;
+using SkillSwapAPI.Models.Enums;
 
 namespace SkillSwapAPI.Data
 {

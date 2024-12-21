@@ -1,12 +1,11 @@
 using SkillSwapAPI.DTOs;
 using SkillSwapAPI.Models;
 
-namespace SkillSwapAPI.Helpers
+namespace SkillSwapAPI.Mappers
 {
     public static class UserMapper
     {
-        // Convertir un User a UserDTO
-        public static UserDTO ToUserDTO(User user)
+        public static UserDTO ToUserDTO(this User user)
         {
             return new UserDTO
             {
@@ -17,8 +16,7 @@ namespace SkillSwapAPI.Helpers
             };
         }
 
-        // Convertir CreateUserDTO a User
-        public static User ToUserFromCreateDto(CreateUserDTO createUserDTO)
+        public static User ToUser(this CreateUserDTO createUserDTO)
         {
             return new User
             {
@@ -28,12 +26,12 @@ namespace SkillSwapAPI.Helpers
             };
         }
 
-        // Convertir UpdateUserDTO a User (para actualizaciones)
-        public static void UpdateUserFromDto(User user, UpdateUserDTO updateUserDTO)
+        public static User ToUser(this UpdateUserDTO updateUserDTO, User user)
         {
             user.Name = updateUserDTO.Name;
             user.Email = updateUserDTO.Email;
             user.ProfilePicture = updateUserDTO.ProfilePicture;
+            return user;
         }
     }
 }

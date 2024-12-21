@@ -7,7 +7,7 @@ namespace SkillSwapAPI.Models
         public int RatedById { get; set; } 
         public int Score { get; set; }
         public string? Comment { get; set; } 
-        public DateTime DateRated { get; set; } = DateTime.UtcNow; // Fecha de la puntuación
+        public DateTime DateRated { get; set; } = DateTime.UtcNow; 
 
         // Navegación
         public User User { get; set; } = null!;
